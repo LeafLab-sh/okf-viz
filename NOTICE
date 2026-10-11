@@ -1,0 +1,11 @@
+okf-viz
+Copyright 2026 LeafLab
+
+This product is derived from the reference viewer of the Open Knowledge
+Format project (https://github.com/GoogleCloudPlatform/open-knowledge-format),
+Copyright 2026 Google LLC, licensed under the Apache License, Version 2.0.
+
+The derived parts are the viewer's HTML template, stylesheet and browser
+script (src/reference_agent/viewer/ in that repository) and the shape of the
+data the generator embeds for them. Files derived from that work carry a
+notice stating that they were changed.
