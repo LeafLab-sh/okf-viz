@@ -2,6 +2,8 @@
 
 Changes come in as pull requests against `main`, from a branch or from a fork. `main` is protected: nothing is pushed to it directly, and a pull request merges only when CI passes.
 
+A pull request that is ready joins a merge queue. The queue puts it on top of the current `main`, runs CI on that, and merges it by rebase if CI passes, so what lands has been tested as it lands and nobody has to keep a branch up to date by hand.
+
 ## Setting up
 
 You need [Node](https://nodejs.org) at the version in `.node-version`, [pnpm](https://pnpm.io) at the version in `package.json`, and [just](https://just.systems).
@@ -32,7 +34,7 @@ A fork carries the release workflow too, but it publishes only from this reposit
 
 ## Dependabot
 
-Dependabot's pull requests merge by themselves once CI passes on them. One that fails stays open for someone to look at.
+Dependabot's pull requests, for the workflows' actions and for the package's dependencies, merge by themselves once CI passes on them. One that fails stays open for someone to look at. An update is taken only after a week in the registry, minor and patch updates of the tools come grouped, and the two libraries a viewer loads are left alone: `SPEC.md` §5.3 has their versions raised deliberately.
 
 ## Security
 

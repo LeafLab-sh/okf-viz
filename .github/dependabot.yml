@@ -8,3 +8,30 @@ updates:
       interval: weekly
     commit-message:
       prefix: ci
+
+  # The package's dependencies. Dependabot's pull requests merge by themselves
+  # once CI passes (dependabot-auto-merge.yml), so three things limit what
+  # that can let in.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build
+    # A version is taken only once it has been out for a week: a release that
+    # turns out to be malicious is usually withdrawn within days.
+    cooldown:
+      default-days: 7
+    # Minor and patch updates of the tools come as one pull request a week.
+    # A major update, and any update of the one runtime dependency, comes
+    # alone, to be read.
+    groups:
+      development:
+        dependency-type: development
+        update-types: [minor, patch]
+    ignore:
+      # The two libraries a viewer loads. Their versions are part of what a
+      # viewer is: its integrity hashes, its policy and the golden files
+      # follow from them. SPEC.md §5.3 has them raised deliberately.
+      - dependency-name: cytoscape
+      - dependency-name: marked
