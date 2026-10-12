@@ -1,0 +1,106 @@
+<!doctype html>
+<!--
+  Copyright 2026 Google LLC
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  Modified by LeafLab, 2026: derived from the Open Knowledge Format reference
+  viewer (src/reference_agent/viewer/templates/viz.html).
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="{{CSP}}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OKF Bundle Viewer</title>
+    <!--{{LIBRARIES}}-->
+    <style id="__________cytoscape_stylesheet">
+    /*{{CSS}}*/
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="title">
+        <strong id="bundle-name"></strong>
+        <span class="muted">OKF bundle</span>
+        <span class="muted" id="generator"></span>
+      </div>
+      <div class="controls">
+        <input id="search" type="search" placeholder="Search title / id / tag" aria-label="Search">
+        <select id="filter-bundle" aria-label="Bundle" hidden>
+          <option value="">All bundles</option>
+        </select>
+        <select id="filter-type" aria-label="Type">
+          <option value="">All types</option>
+        </select>
+        <select id="layout" aria-label="Layout">
+          <option value="cose">cose (force)</option>
+          <option value="concentric">concentric</option>
+          <option value="breadthfirst">breadth-first</option>
+          <option value="circle">circle</option>
+          <option value="grid">grid</option>
+        </select>
+        <button id="reset" type="button">Reset view</button>
+      </div>
+    </header>
+
+    <p id="offline" hidden>
+      This viewer needs a network connection to load the two libraries that draw it, Cytoscape.js
+      and marked, from cdn.jsdelivr.net. Connect, then reload this page.
+    </p>
+
+    <main id="viewer">
+      <section id="graph"></section>
+      <section id="detail">
+        <div id="detail-empty" class="muted">Click a node to see its details.</div>
+        <article id="detail-content" hidden>
+          <header class="detail-header">
+            <span class="type-chip" id="detail-type"></span>
+            <!-- biome-ignore lint/a11y/useHeadingContent: the viewer's script writes the concept's title here -->
+            <h1 id="detail-title"></h1>
+            <div class="muted" id="detail-id"></div>
+            <div class="muted" id="detail-bundle" hidden></div>
+          </header>
+          <div class="badges" id="detail-badges"></div>
+          <dl class="frontmatter">
+            <dt>Description</dt>
+            <dd id="detail-description"></dd>
+            <dt>Resource</dt>
+            <dd id="detail-resource"></dd>
+            <dt>Tags</dt>
+            <dd id="detail-tags"></dd>
+            <dt>Generated</dt>
+            <dd id="detail-generated"></dd>
+            <dt>Verified</dt>
+            <dd id="detail-verified"></dd>
+            <dt>Sources</dt>
+            <dd id="detail-sources"></dd>
+          </dl>
+          <hr>
+          <div id="detail-body"></div>
+          <section id="detail-backlinks" hidden>
+            <h2>Cited by</h2>
+            <ul id="backlinks-list"></ul>
+          </section>
+        </article>
+      </section>
+    </main>
+
+    <script type="application/json" id="okf-data">
+    "{{DATA}}"
+    </script>
+    <script>
+    /*{{JS}}*/
+    </script>
+  </body>
+</html>
