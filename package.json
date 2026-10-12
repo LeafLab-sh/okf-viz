@@ -1,0 +1,77 @@
+{
+  "name": "@leaflab-sh/okf-viz",
+  "version": "0.1.0",
+  "description": "Generates a single-file, interactive HTML viewer for an Open Knowledge Format bundle.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeafLab-sh/okf-viz.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "packageManager": "pnpm@10.32.1",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./inline": {
+      "types": "./dist/inline.d.ts",
+      "default": "./dist/inline.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "okf-viz": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "NOTICE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:assets": "node scripts/build-assets.mjs",
+    "build": "pnpm build:assets && node scripts/clean.mjs dist && tsup && tsc -p tsconfig.build.json",
+    "typecheck": "pnpm build:assets && tsc --noEmit",
+    "test": "pnpm build:assets && vitest run",
+    "test:browser": "pnpm build:assets && playwright test",
+    "test:workers": "pnpm build && vitest run --config vitest.workers.config.ts",
+    "lint": "biome ci --error-on-warnings . && node scripts/fix-whitespace.mjs --check",
+    "prepare": "husky",
+    "format": "biome check --write . && node scripts/fix-whitespace.mjs --all"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "workerd"
+    ]
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
+    "@playwright/test": "^1.64.0",
+    "@types/node": "^26.6.5",
+    "cytoscape": "3.28.1",
+    "esbuild": "^0.28.2",
+    "happy-dom": "^20.14.6",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "marked": "12.0.0",
+    "miniflare": "4.20260730.0",
+    "tsup": "^8.5.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "yaml": "^2.9.1"
+  },
+  "lint-staged": {
+    "*.{ts,mts,mjs,js,json,jsonc,css,html}": "biome check --write --error-on-warnings --no-errors-on-unmatched --files-ignore-unknown=true",
+    "*": "node scripts/fix-whitespace.mjs"
+  }
+}
