@@ -6,6 +6,9 @@ dist/
 build/
 coverage/
 *.tsbuildinfo
+src/generated/
+test-results/
+playwright-report/
 
 # Cloudflare
 .wrangler/
