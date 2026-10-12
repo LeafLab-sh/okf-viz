@@ -8,11 +8,11 @@ name: Release
 # Merging that pull request is the release: this workflow then tags it, writes
 # the GitHub release, and publishes the package to GitHub Packages.
 #
-# A pull request opened with the workflow's own token doesn't start CI, and
-# main accepts nothing CI hasn't passed. Either give this workflow a token of
-# its own in the secret RELEASE_PLEASE_TOKEN (a fine-grained token, or a GitHub
-# App's, with contents and pull requests read and write), or close and reopen
-# the release pull request to start CI on it.
+# GitHub starts no workflow for anything done with a workflow's own token, so
+# CI wouldn't run on a release pull request opened with it, and main accepts
+# nothing CI hasn't passed. With the secret AUTOMATION_TOKEN the pull request
+# is opened by that token's owner and CI runs. Without it, close and reopen
+# the release pull request to start CI. See README.md, "Automation token".
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
       - id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          token: ${{ secrets.AUTOMATION_TOKEN || github.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 

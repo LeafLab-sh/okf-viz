@@ -158,7 +158,13 @@ Nobody sets the version or writes the changelog by hand. [release-please](https:
 
 Merging that pull request is the release. The Release workflow then tags the commit, writes the GitHub release, and publishes the package to GitHub Packages.
 
-The pull request is opened with the workflow's own token, and GitHub doesn't start CI for those, while `main` accepts nothing CI hasn't passed. Close and reopen the pull request to start CI on it, or put a token in the secret `RELEASE_PLEASE_TOKEN`, as `.github/workflows/release.yml` describes, and CI starts by itself.
+### Automation token
+
+GitHub starts no workflow for anything done with a workflow's own token. Two things here are done by workflows and need CI to run on the result: release-please opens the release pull request, and Dependabot's pull requests are sent to the merge queue. With the workflow's own token, CI never runs on either, and `main` accepts nothing CI hasn't passed.
+
+So both workflows use the secret `AUTOMATION_TOKEN` when it is there: a fine-grained personal access token, or a GitHub App's token, for this repository alone, with read and write access to contents and pull requests. It has to be set twice, under *Settings → Secrets and variables*, as an **Actions** secret and as a **Dependabot** secret, since a workflow started by Dependabot's pull request is given only the latter.
+
+Without it nothing breaks, and two things are done by hand: the release pull request is closed and reopened to start CI on it, and a Dependabot pull request is queued by whoever reads it.
 
 ### Notes
 

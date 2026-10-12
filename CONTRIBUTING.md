@@ -34,7 +34,7 @@ A fork carries the release workflow too, but it publishes only from this reposit
 
 ## Dependabot
 
-Dependabot's pull requests, for the workflows' actions and for the package's dependencies, merge by themselves once CI passes on them. One that fails stays open for someone to look at. An update is taken only after a week in the registry, minor and patch updates of the tools come grouped, and the two libraries a viewer loads are left alone: `SPEC.md` §5.3 has their versions raised deliberately.
+Dependabot's pull requests, for the workflows' actions and for the package's dependencies, join the merge queue by themselves once CI passes on them, if the repository has its automation token (`README.md` says what that is). One that fails stays open for someone to look at. An update is taken only after a week in the registry, minor and patch updates of the tools come grouped, and the two libraries a viewer loads are left alone: `SPEC.md` §5.3 has their versions raised deliberately.
 
 ## Security
 
