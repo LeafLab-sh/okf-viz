@@ -1,0 +1,32 @@
+name: Dependabot auto-merge
+
+# Turns on auto-merge for Dependabot's pull requests. Nothing merges here:
+# GitHub merges the pull request once the checks main requires have passed on
+# it, and leaves it open if they don't.
+#
+# It is safe on `pull_request`, although it asks for a token that can write:
+# a pull request from a fork gets a read-only token whatever a workflow asks
+# for, and the job runs only for a pull request Dependabot opened in this
+# repository.
+
+on: pull_request
+
+permissions:
+  contents: read
+
+jobs:
+  enable:
+    if: >-
+      github.repository == 'LeafLab-sh/okf-viz' &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Merge by rebase once the checks pass
+        run: gh pr merge --auto --rebase "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ github.token }}
