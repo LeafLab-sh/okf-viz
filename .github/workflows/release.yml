@@ -1,0 +1,67 @@
+name: Release
+
+# Releases are made by release-please, from the commit messages on main
+# (AGENTS.md says what each kind of message does to the version).
+#
+# Each push to main updates a pull request titled "chore(main): release x.y.z",
+# which holds the next version in package.json and its entry in CHANGELOG.md.
+# Merging that pull request is the release: this workflow then tags it, writes
+# the GitHub release, and publishes the package to GitHub Packages.
+#
+# A pull request opened with the workflow's own token doesn't start CI, and
+# main accepts nothing CI hasn't passed. Either give this workflow a token of
+# its own in the secret RELEASE_PLEASE_TOKEN (a fine-grained token, or a GitHub
+# App's, with contents and pull requests read and write), or close and reopen
+# the release pull request to start CI on it.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  release-please:
+    # A fork has this file too. It releases nothing.
+    if: github.repository == 'LeafLab-sh/okf-viz'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+          registry-url: https://npm.pkg.github.com
+          scope: "@leaflab-sh"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      # Builds dist/, and runs what will be published in a Workers runtime.
+      - run: pnpm test:workers
+      - run: pnpm publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

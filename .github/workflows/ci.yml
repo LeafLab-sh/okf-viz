@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # A merge queue tests what main would be with the pull request on it, and
+  # waits for these same checks to report on that.
+  merge_group:
+
+permissions:
+  contents: read
+
+# It also runs on pull requests from forks, so it must stay safe to run on
+# code nobody here has read: it is triggered by `pull_request`, never
+# `pull_request_target`, so a fork's run gets a read-only token and no
+# secrets, and it asks for no permission beyond reading the repository.
+#
+# This workflow is the reference: a change is right when it passes here, on a
+# clean checkout with the versions the repository pins (Node in .node-version,
+# pnpm in package.json, every tool in pnpm-lock.yaml), whatever it did on the
+# machine it was written on.
+
+jobs:
+  # What the Git hooks check on a contributor's machine, checked again here,
+  # since a hook can be skipped. On both systems, so that nobody's editor or
+  # line endings can produce something the other system's tools then reject.
+  lint:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # The pull request's commits, for their messages.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Formatting and lint by Biome, changing nothing, then trailing whitespace.
+      - run: pnpm lint
+      - name: Check the commit messages
+        if: github.event_name == 'pull_request'
+        shell: bash
+        # Passed through the environment, not written into the script: nothing
+        # a pull request supplies is ever read as shell.
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: pnpm exec commitlint --from "$BASE" --to "$HEAD"
+
+  check:
+    # Both systems, because generated viewers are compared byte for byte and
+    # must not depend on the platform's line endings or path separators.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm test:workers
+      # The browsers are a few hundred megabytes and slow to download,
+      # Windows most of all, so they are kept between runs. The key holds
+      # Playwright's version, since each version wants its own builds.
+      - name: Read Playwright's version
+        id: playwright
+        shell: bash
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Restore the browsers
+        id: browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.cache/ms-playwright
+            ~/AppData/Local/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium-firefox
+      - name: Download the browsers
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium firefox
+      # A restored browser still needs its system libraries, which aren't cached.
+      - name: Install the browsers' system libraries
+        if: steps.browsers.outputs.cache-hit == 'true' && runner.os == 'Linux'
+        run: pnpm exec playwright install-deps chromium firefox
+      - run: pnpm test:browser
