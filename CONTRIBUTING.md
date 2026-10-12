@@ -30,6 +30,10 @@ CI runs on a fork's pull request with a read-only token and no secrets. A mainta
 
 A fork carries the release workflow too, but it publishes only from this repository.
 
+## Dependabot
+
+Dependabot's pull requests merge by themselves once CI passes on them. One that fails stays open for someone to look at.
+
 ## Security
 
 Don't open an issue or a pull request for a vulnerability. [`SECURITY.md`](SECURITY.md) says how to report one privately.
