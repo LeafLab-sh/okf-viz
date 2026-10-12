@@ -9,3 +9,14 @@ The derived parts are the viewer's HTML template, stylesheet and browser
 script (src/reference_agent/viewer/ in that repository) and the shape of the
 data the generator embeds for them. Files derived from that work carry a
 notice stating that they were changed.
+
+The example bundles under test/fixtures/okf/ are copied unchanged from the
+bundles/ directory of that repository, and the files under
+test/fixtures/okf-reference/ are the output of its reference generator for
+them. The commit they come from is recorded in test/fixtures/okf/SOURCE.txt.
+
+The package's "inline" entry, and every viewer generated with it, contains
+Cytoscape.js (Copyright (c) 2016-2023, The Cytoscape Consortium) and marked
+(Copyright (c) 2011-2024, Christopher Jeffrey; Copyright (c) 2018+, MarkedJS),
+each unchanged and under the MIT License. Each carries its copyright notice in
+its own header. Neither is a part of okf-viz.
