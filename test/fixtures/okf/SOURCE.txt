@@ -1,0 +1,3 @@
+The bundles here are copied from https://github.com/GoogleCloudPlatform/open-knowledge-format
+at commit ad30107c31c06aec8a7d5636e0d1058118604e6f, under the Apache License, Version 2.0.
+Copyright 2026 Google LLC. See NOTICE at the root of this repository.

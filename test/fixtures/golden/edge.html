@@ -1,0 +1,954 @@
+<!doctype html>
+<!--
+  Copyright 2026 Google LLC
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  Modified by LeafLab, 2026: derived from the Open Knowledge Format reference
+  viewer (src/reference_agent/viewer/templates/viz.html).
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src https://cdn.jsdelivr.net/npm/cytoscape@3.28.1/dist/cytoscape.min.js https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js 'sha256-a1ydTzxkAHRF3h9z1dDflNZNDvRLiuVlJbeXzChQdcY='; style-src 'sha256-QWxqj9iVdOSUTJwzSJin8DeKxO4P2dUBvFysw0qH3Ks='; img-src 'self'; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OKF Bundle Viewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.28.1/dist/cytoscape.min.js" integrity="sha384-J7Q85oZE4GJ/e7+n2aOQsLXfDwwfnA8S2nZAL5BpFsfpCF84zQD7LroZ/dMnLgex" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js" integrity="sha384-NNQgBjjuhtXzPmmy4gurS5X7P4uTt1DThyevz4Ua0IVK5+kazYQI1W27JHjbbxQz" crossorigin="anonymous"></script>
+    <style id="__________cytoscape_stylesheet">/*
+ * Copyright 2026 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Modified by LeafLab, 2026: derived from the Open Knowledge Format reference
+ * viewer (src/reference_agent/viewer/static/viz.css).
+ */
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  color: #0f172a;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+.title strong {
+  font-size: 16px;
+  margin-right: 8px;
+}
+.muted {
+  color: #64748b;
+  font-size: 12px;
+}
+.controls {
+  display: flex;
+  gap: 8px;
+}
+.controls input,
+.controls select,
+.controls button {
+  font-size: 13px;
+  padding: 5px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #fff;
+}
+.controls input {
+  width: 220px;
+}
+.controls button {
+  cursor: pointer;
+  background: #f1f5f9;
+}
+.controls button:hover {
+  background: #e2e8f0;
+}
+
+main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+#graph {
+  flex: 1 1 60%;
+  background: #fff;
+  border-right: 1px solid #e2e8f0;
+  min-width: 0;
+  position: relative;
+}
+#detail {
+  flex: 0 0 40%;
+  overflow-y: auto;
+  padding: 18px 22px;
+  background: #fff;
+}
+#detail-empty {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.detail-header {
+  margin-bottom: 12px;
+}
+.detail-header h1 {
+  font-size: 18px;
+  margin: 4px 0 2px;
+  font-weight: 600;
+}
+.type-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+dl.frontmatter {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  row-gap: 4px;
+  column-gap: 12px;
+  margin: 8px 0 12px;
+  font-size: 13px;
+}
+dl.frontmatter dt {
+  color: #64748b;
+  font-weight: 500;
+}
+dl.frontmatter dd {
+  margin: 0;
+}
+dl.frontmatter a {
+  color: #2563eb;
+  word-break: break-all;
+}
+
+.tag {
+  display: inline-block;
+  padding: 1px 6px;
+  margin: 0 4px 2px 0;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 4px;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.badge.status-stable {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+.badge.status-draft {
+  background: #fefce8;
+  color: #a16207;
+  border-color: #fde68a;
+}
+.badge.status-deprecated {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #cbd5e1;
+  text-decoration: line-through;
+}
+.badge.trust-unverified {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #cbd5e1;
+}
+.badge.trust-machine-confirmed {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+.badge.trust-human-reviewed {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border-color: #ddd6fe;
+}
+.badge.stale {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+.badge.fresh {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.sources-list {
+  padding-left: 18px;
+  margin: 0;
+}
+.sources-list li {
+  margin: 1px 0;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 14px 0;
+}
+
+#detail-body {
+  font-size: 13px;
+  line-height: 1.55;
+}
+#detail-body h1 {
+  font-size: 16px;
+  margin: 18px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #e2e8f0;
+}
+#detail-body h2 {
+  font-size: 14px;
+  margin: 14px 0 4px;
+}
+#detail-body h3 {
+  font-size: 13px;
+  margin: 12px 0 4px;
+}
+#detail-body p {
+  margin: 6px 0;
+}
+#detail-body code {
+  background: #f1f5f9;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+}
+#detail-body pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 12px;
+}
+#detail-body pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+#detail-body ul,
+#detail-body ol {
+  padding-left: 22px;
+  margin: 6px 0;
+}
+#detail-body li {
+  margin: 2px 0;
+}
+#detail-body table {
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+#detail-body th,
+#detail-body td {
+  border: 1px solid #e2e8f0;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+#detail-body a.internal {
+  color: #2563eb;
+  cursor: pointer;
+}
+#detail-body a.external {
+  color: #2563eb;
+}
+
+#detail-backlinks {
+  margin-top: 18px;
+}
+#detail-backlinks h2 {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+#detail-backlinks ul {
+  padding-left: 18px;
+}
+#detail-backlinks a {
+  color: #2563eb;
+  cursor: pointer;
+}
+
+/* Additions to the reference stylesheet. */
+
+/* Cytoscape adds this rule in a <style> element of its own unless an element
+   with its stylesheet's id exists. This stylesheet takes that id, so that the
+   Content-Security-Policy needs to allow no stylesheet but this one. */
+.__________cytoscape_container {
+  position: relative;
+}
+
+/* `main` sets `display`, which would override the attribute. */
+main[hidden] {
+  display: none;
+}
+
+#offline {
+  max-width: 480px;
+  margin: 60px auto;
+  padding: 0 16px;
+  text-align: center;
+  line-height: 1.55;
+}
+#generator {
+  margin-left: 8px;
+}
+#detail-body img {
+  max-width: 100%;
+}
+#detail-body blockquote {
+  margin: 6px 0;
+  padding-left: 12px;
+  border-left: 3px solid #e2e8f0;
+  color: #475569;
+}
+</style>
+  </head>
+  <body>
+    <header>
+      <div class="title">
+        <strong id="bundle-name"></strong>
+        <span class="muted">OKF bundle</span>
+        <span class="muted" id="generator"></span>
+      </div>
+      <div class="controls">
+        <input id="search" type="search" placeholder="Search title / id / tag" aria-label="Search">
+        <select id="filter-bundle" aria-label="Bundle" hidden>
+          <option value="">All bundles</option>
+        </select>
+        <select id="filter-type" aria-label="Type">
+          <option value="">All types</option>
+        </select>
+        <select id="layout" aria-label="Layout">
+          <option value="cose">cose (force)</option>
+          <option value="concentric">concentric</option>
+          <option value="breadthfirst">breadth-first</option>
+          <option value="circle">circle</option>
+          <option value="grid">grid</option>
+        </select>
+        <button id="reset" type="button">Reset view</button>
+      </div>
+    </header>
+
+    <p id="offline" hidden>
+      This viewer needs a network connection to load the two libraries that draw it, Cytoscape.js
+      and marked, from cdn.jsdelivr.net. Connect, then reload this page.
+    </p>
+
+    <main id="viewer">
+      <section id="graph"></section>
+      <section id="detail">
+        <div id="detail-empty" class="muted">Click a node to see its details.</div>
+        <article id="detail-content" hidden>
+          <header class="detail-header">
+            <span class="type-chip" id="detail-type"></span>
+            <h1 id="detail-title"></h1>
+            <div class="muted" id="detail-id"></div>
+            <div class="muted" id="detail-bundle" hidden></div>
+          </header>
+          <div class="badges" id="detail-badges"></div>
+          <dl class="frontmatter">
+            <dt>Description</dt>
+            <dd id="detail-description"></dd>
+            <dt>Resource</dt>
+            <dd id="detail-resource"></dd>
+            <dt>Tags</dt>
+            <dd id="detail-tags"></dd>
+            <dt>Generated</dt>
+            <dd id="detail-generated"></dd>
+            <dt>Verified</dt>
+            <dd id="detail-verified"></dd>
+            <dt>Sources</dt>
+            <dd id="detail-sources"></dd>
+          </dl>
+          <hr>
+          <div id="detail-body"></div>
+          <section id="detail-backlinks" hidden>
+            <h2>Cited by</h2>
+            <ul id="backlinks-list"></ul>
+          </section>
+        </article>
+      </section>
+    </main>
+
+    <script type="application/json" id="okf-data">{"name":"Edge cases","assetBase":"","graph":{"format":1,"generator":"okf-viz/0.0.0","nodes":[{"data":{"id":"notes/plain","label":"notes/plain","type":"Unknown","description":"","resource":"","tags":[],"status":"stable","generated":{},"verified":[],"stale_after":"","sources":[],"trust_tier":"unverified","stale":false,"color":"#94a3b8","size":30}},{"data":{"id":"notes/untyped","label":"No type here","type":"Unknown","description":"","resource":"","tags":[],"status":"stable","generated":{},"verified":[],"stale_after":"","sources":[],"trust_tier":"unverified","stale":false,"color":"#94a3b8","size":30}},{"data":{"id":"tables/customers","label":"tables/customers","type":"Custom Thing","description":"","resource":"","tags":["solo"],"status":"stable","generated":{},"verified":[{"by":"agent:checker","at":"2026-09-03T00:00:00Z"}],"stale_after":"","sources":[{"title":"A bare mapping"}],"trust_tier":"machine-confirmed","stale":false,"color":"#ca8a04","size":30}},{"data":{"id":"tables/orders","label":"Orders","type":"BigQuery Table","description":"One row per order.","resource":"https://example.com/tables/orders","tags":["sales","core"],"status":"stable","generated":{"by":"agent:reference","at":"2026-09-01T00:00:00Z"},"verified":[{"by":"human:lea","at":"2026-09-02T00:00:00Z"}],"stale_after":"2026-12-31T00:00:00Z","sources":[{"title":"Data dictionary","resource":"https://example.com/dictionary"},{"resource":"/notes/plain.md"}],"trust_tier":"human-reviewed","stale":false,"color":"#3b82f6","size":31}}],"edges":[{"data":{"id":"notes/plain\u0000tables/orders","source":"notes/plain","target":"tables/orders"}},{"data":{"id":"tables/customers\u0000tables/orders","source":"tables/customers","target":"tables/orders"}},{"data":{"id":"tables/orders\u0000notes/plain","source":"tables/orders","target":"notes/plain"}},{"data":{"id":"tables/orders\u0000tables/customers","source":"tables/orders","target":"tables/customers"}}],"bodies":{"notes/plain":"# A note with no frontmatter\n\nIt links to [orders](../tables/orders.md).\n","notes/untyped":"Nothing links here.","tables/customers":"Back to [orders](./orders.md#schema), twice: [orders](orders.md).","tables/orders":"# Schema\n\nJoins to [customers](customers.md) and to [a missing table](missing.md).\nSee [the plain note](/notes/plain.md) and [itself](orders.md).\nOutside the bundle: [up](../../outside.md). Elsewhere: [site](https://example.com/page.md)."},"types":["BigQuery Table","Custom Thing","Unknown"],"palette":{"BigQuery Table":"#3b82f6","Custom Thing":"#ca8a04","Unknown":"#94a3b8"}}}</script>
+    <script>"use strict";
+(() => {
+  // src/core/links.ts
+  function resolvePath(target, fromDir) {
+    if (target === "" || target.includes("://")) return null;
+    const segments = target.startsWith("/") || fromDir === "" ? [] : fromDir.split("/");
+    for (const segment of target.split("/")) {
+      if (segment === "" || segment === ".") continue;
+      if (segment === "..") {
+        if (segments.length === 0) return null;
+        segments.pop();
+      } else {
+        segments.push(segment);
+      }
+    }
+    return segments.length === 0 ? null : segments.join("/");
+  }
+  function resolveConceptId(target, fromDir, has) {
+    const candidates = [target];
+    try {
+      const decoded = decodeURIComponent(target);
+      if (decoded !== target) candidates.push(decoded);
+    } catch {
+    }
+    for (const candidate of candidates) {
+      const path = resolvePath(candidate, fromDir);
+      if (path === null || !path.endsWith(".md")) continue;
+      const id = path.slice(0, -3);
+      if (id !== "" && has(id)) return id;
+    }
+    return null;
+  }
+  function dirOf(path) {
+    const slash = path.lastIndexOf("/");
+    return slash < 0 ? "" : path.slice(0, slash);
+  }
+  function resolveRepoConceptId(target, fromDir, own, bundles) {
+    const local = resolveConceptId(target, fromDir, own.has);
+    if (local !== null) return `${own.slug}/${local}`;
+    if (target.startsWith("/")) return null;
+    const repoDir = [own.root, fromDir].filter((part) => part !== "").join("/");
+    for (const bundle of bundles) {
+      const prefix = bundle.root === "" ? "" : `${bundle.root}/`;
+      const found = resolveConceptId(
+        target,
+        repoDir,
+        (repoId) => repoId.startsWith(prefix) && bundle.has(repoId.slice(prefix.length))
+      );
+      if (found !== null) return `${bundle.slug}/${found.slice(prefix.length)}`;
+    }
+    return null;
+  }
+  function byInnermost(bundles) {
+    return [...bundles].sort(
+      (a, b) => b.root.length - a.root.length || (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0)
+    );
+  }
+
+  // src/viewer/sanitize.ts
+  var XHTML = "http://www.w3.org/1999/xhtml";
+  var ALLOWED = {
+    p: [],
+    h1: [],
+    h2: [],
+    h3: [],
+    h4: [],
+    h5: [],
+    h6: [],
+    ul: [],
+    ol: ["start"],
+    li: [],
+    a: ["href", "title"],
+    img: ["src", "alt", "title"],
+    code: ["class"],
+    pre: [],
+    blockquote: [],
+    em: [],
+    strong: [],
+    del: [],
+    hr: [],
+    br: [],
+    table: [],
+    thead: [],
+    tbody: [],
+    tr: [],
+    th: ["align"],
+    td: ["align"],
+    input: ["type", "checked", "disabled"]
+  };
+  var escapeHtml = (text2) => text2.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  function httpsUrl(value) {
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" ? url.href : null;
+    } catch {
+      return null;
+    }
+  }
+  function decode(value) {
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  }
+  function externalLink(href, label) {
+    const a = document.createElement("a");
+    a.textContent = label;
+    a.setAttribute("href", href);
+    a.setAttribute("target", "_blank");
+    a.setAttribute("rel", "noopener noreferrer");
+    a.className = "external";
+    return a;
+  }
+  function checkLink(a, context) {
+    const href = a.getAttribute("href") ?? "";
+    for (const target of /* @__PURE__ */ new Set([href, href.split("#")[0]])) {
+      const concept = target === "" ? null : context.resolve(target, context.conceptDir);
+      if (concept !== null) {
+        a.setAttribute("href", "#");
+        a.setAttribute("data-concept", concept);
+        a.className = "internal";
+        return;
+      }
+    }
+    const url = httpsUrl(href);
+    if (url !== null) {
+      a.setAttribute("href", url);
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noopener noreferrer");
+      a.className = "external";
+      return;
+    }
+    a.replaceWith(...Array.from(a.childNodes));
+  }
+  function checkImage(img, context) {
+    const src = img.getAttribute("src") ?? "";
+    const alt = img.getAttribute("alt") ?? "";
+    let isUrl = true;
+    try {
+      new URL(src);
+    } catch {
+      isUrl = false;
+    }
+    if (!isUrl && !src.startsWith("//") && !src.includes("\\")) {
+      const path = resolvePath(decode(src.split(/[?#]/)[0]), context.conceptDir);
+      if (path !== null) {
+        img.setAttribute(
+          "src",
+          context.assetBase + path.split("/").map(encodeURIComponent).join("/")
+        );
+        return;
+      }
+    }
+    const url = httpsUrl(src);
+    if (url !== null) img.replaceWith(externalLink(url, alt || url));
+    else img.replaceWith(document.createTextNode(alt));
+  }
+  function sanitize(parent, context) {
+    for (const node of Array.from(parent.childNodes)) {
+      if (node.nodeType === Node.TEXT_NODE) continue;
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        node.remove();
+        continue;
+      }
+      const element2 = node;
+      const name = element2.localName;
+      const attributes = element2.namespaceURI === XHTML ? ALLOWED[name] : void 0;
+      if (attributes === void 0 || !Object.hasOwn(ALLOWED, name)) {
+        element2.replaceWith(document.createTextNode(element2.textContent ?? ""));
+        continue;
+      }
+      for (const attribute of element2.getAttributeNames()) {
+        if (!attributes.includes(attribute)) element2.removeAttribute(attribute);
+      }
+      sanitize(element2, context);
+      if (name === "a") checkLink(element2, context);
+      else if (name === "img") checkImage(element2, context);
+      else if (name === "input") {
+        if (element2.getAttribute("type") === "checkbox") element2.setAttribute("disabled", "");
+        else element2.remove();
+      } else if (name === "code") {
+        if (!/^language-[\w-]+$/.test(element2.getAttribute("class") ?? "")) {
+          element2.removeAttribute("class");
+        }
+      } else if (name === "th" || name === "td") {
+        if (!/^(left|right|center)$/.test(element2.getAttribute("align") ?? "")) {
+          element2.removeAttribute("align");
+        }
+      } else if (name === "ol") {
+        if (!/^\d{1,9}$/.test(element2.getAttribute("start") ?? "")) element2.removeAttribute("start");
+      }
+    }
+  }
+  function plainText(markdown) {
+    const fragment = document.createDocumentFragment();
+    const pre = document.createElement("pre");
+    pre.textContent = markdown;
+    fragment.append(pre);
+    return fragment;
+  }
+  function renderBody(markdown, context) {
+    try {
+      const renderer = true ? { html: (html2) => escapeHtml(html2) } : {};
+      const html = new marked.Marked({ gfm: true, breaks: false, async: false, renderer }).parse(
+        markdown
+      );
+      const template = document.createElement("template");
+      template.innerHTML = html;
+      if (true) sanitize(template.content, context);
+      return template.content;
+    } catch {
+      return plainText(markdown);
+    }
+  }
+
+  // src/viewer/stale.ts
+  var INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/;
+  function isStale(staleAfter, now) {
+    if (!INSTANT.test(staleAfter)) return false;
+    const instant = Date.parse(staleAfter);
+    return !Number.isNaN(instant) && now >= instant;
+  }
+
+  // src/viewer/main.ts
+  var byId = (id) => document.getElementById(id);
+  function element(tag, text2, className) {
+    const created = document.createElement(tag);
+    created.textContent = text2;
+    if (className !== void 0) created.className = className;
+    return created;
+  }
+  function text(value) {
+    if (typeof value === "string") return value;
+    if (typeof value === "number" || typeof value === "boolean") return String(value);
+    return "";
+  }
+  function isHttps(value) {
+    try {
+      return new URL(value).protocol === "https:";
+    } catch {
+      return false;
+    }
+  }
+  function externalLink2(href, label) {
+    const a = element("a", label, "external");
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    return a;
+  }
+  var STATUS_CLASSES = /* @__PURE__ */ new Set(["stable", "draft", "deprecated"]);
+  function formatActorEvent(event) {
+    const by = text(event?.by);
+    if (by === "") return "\u2014";
+    const at = text(event?.at);
+    return at === "" ? by : `${by} \xB7 ${at}`;
+  }
+  function main() {
+    const payload = JSON.parse(byId("okf-data").textContent ?? "");
+    const { graph, name } = payload;
+    document.title = `${name} \u2014 OKF Viewer`;
+    byId("bundle-name").textContent = name;
+    byId("generator").textContent = graph.generator;
+    if (typeof cytoscape === "undefined" || typeof marked === "undefined") {
+      byId("offline").hidden = false;
+      byId("viewer").hidden = true;
+      return;
+    }
+    const nodes = new Map(graph.nodes.map((n) => [n.data.id, n.data]));
+    const bodies = new Map(Object.entries(graph.bodies));
+    const backlinks = /* @__PURE__ */ new Map();
+    for (const edge of graph.edges) {
+      const { source, target } = edge.data;
+      const sources = backlinks.get(target);
+      if (sources === void 0) backlinks.set(target, [source]);
+      else sources.push(source);
+    }
+    const repoBundles = graph.bundles ?? [];
+    const titles = new Map(repoBundles.map((b) => [b.slug, b.title]));
+    const indexes = new Map(
+      repoBundles.map((b) => [
+        b.slug,
+        { slug: b.slug, root: b.root, has: (id) => nodes.has(`${b.slug}/${id}`) }
+      ])
+    );
+    const innermost = byInnermost(Array.from(indexes.values()));
+    function placeOf(id, data) {
+      const own = data.bundle === void 0 ? void 0 : indexes.get(data.bundle);
+      if (own === void 0) {
+        return {
+          dir: dirOf(id),
+          resolve: (target, fromDir) => resolveConceptId(target, fromDir, (c) => nodes.has(c)),
+          imageBase: payload.assetBase,
+          bundleTitle: ""
+        };
+      }
+      const root = own.root.split("/").map(encodeURIComponent).join("/");
+      return {
+        dir: dirOf(id.slice(own.slug.length + 1)),
+        resolve: (target, fromDir) => resolveRepoConceptId(target, fromDir, own, innermost),
+        imageBase: payload.assetBase + (root === "" ? "" : `${root}/`),
+        bundleTitle: titles.get(own.slug) ?? own.slug
+      };
+    }
+    const typeSelect = byId("filter-type");
+    for (const type of graph.types) {
+      const option = element("option", type);
+      option.value = type;
+      typeSelect.append(option);
+    }
+    const bundleSelect = byId("filter-bundle");
+    bundleSelect.hidden = repoBundles.length === 0;
+    for (const bundle of repoBundles) {
+      const option = element("option", bundle.title);
+      option.value = bundle.slug;
+      bundleSelect.append(option);
+    }
+    const cyIds = new Map(graph.nodes.map((n, i) => [n.data.id, `n${i}`]));
+    const elements = [
+      ...graph.nodes.map((n) => ({
+        data: {
+          ...n.data,
+          id: cyIds.get(n.data.id),
+          concept: n.data.id,
+          // In a repo viewer a node is labelled with its bundle.
+          display: n.data.bundle === void 0 ? n.data.label : `${n.data.label}
+[${n.data.bundle}]`
+        }
+      })),
+      ...graph.edges.map((e, i) => ({
+        data: { id: `e${i}`, source: cyIds.get(e.data.source), target: cyIds.get(e.data.target) }
+      }))
+    ];
+    const cy = cytoscape({
+      container: byId("graph"),
+      elements,
+      style: [
+        {
+          selector: "node",
+          style: {
+            "background-color": "data(color)",
+            label: "data(display)",
+            color: "#0f172a",
+            "font-size": 11,
+            "text-valign": "bottom",
+            "text-margin-y": 4,
+            "text-wrap": "wrap",
+            "text-max-width": 120,
+            width: "data(size)",
+            height: "data(size)",
+            "border-width": 1,
+            "border-color": "#0f172a"
+          }
+        },
+        {
+          selector: "node.stale",
+          style: { "border-width": 2, "border-color": "#b91c1c", "border-style": "dashed" }
+        },
+        { selector: 'node[status = "deprecated"]', style: { opacity: 0.55 } },
+        { selector: "node:selected", style: { "border-width": 3, "border-color": "#f59e0b" } },
+        {
+          selector: "edge",
+          style: {
+            width: 1.5,
+            "line-color": "#cbd5e1",
+            "target-arrow-color": "#cbd5e1",
+            "target-arrow-shape": "triangle",
+            "curve-style": "bezier",
+            "arrow-scale": 0.9
+          }
+        },
+        {
+          selector: "edge:selected",
+          style: { "line-color": "#f59e0b", "target-arrow-color": "#f59e0b", width: 2.5 }
+        },
+        { selector: ".dim", style: { opacity: 0.15 } }
+      ],
+      layout: { name: "cose", animate: false, padding: 30 },
+      wheelSensitivity: 0.2
+    });
+    function markStale() {
+      const now = Date.now();
+      cy.nodes().forEach((n) => {
+        n.toggleClass("stale", isStale(text(n.data("stale_after")), now));
+      });
+    }
+    markStale();
+    cy.on("tap", "node", (event) => showDetail(event.target.data("concept")));
+    cy.on("tap", (event) => {
+      if (event.target === cy) clearSelection();
+    });
+    byId("layout").addEventListener("change", (event) => {
+      const layout = event.target.value;
+      cy.layout({ name: layout, animate: false, padding: 30 }).run();
+    });
+    byId("reset").addEventListener("click", () => {
+      cy.fit(void 0, 30);
+      clearSelection();
+    });
+    const searchInput = byId("search");
+    function applyFilters() {
+      const query = searchInput.value.trim().toLowerCase();
+      const type = typeSelect.value;
+      const bundle = bundleSelect.value;
+      cy.nodes().forEach((n) => {
+        const data = n.data();
+        const haystack = `${data.label} ${data.concept} ${data.tags.join(" ")}`.toLowerCase();
+        const shown = (query === "" || haystack.includes(query)) && (type === "" || data.type === type) && (bundle === "" || data.bundle === bundle);
+        n.toggleClass("dim", !shown);
+      });
+      cy.edges().forEach((e) => {
+        e.toggleClass("dim", e.source().hasClass("dim") || e.target().hasClass("dim"));
+      });
+    }
+    searchInput.addEventListener("input", applyFilters);
+    typeSelect.addEventListener("change", applyFilters);
+    bundleSelect.addEventListener("change", applyFilters);
+    function clearSelection() {
+      cy.elements().unselect();
+      byId("detail-empty").hidden = false;
+      byId("detail-content").hidden = true;
+    }
+    function internalLink(id, label) {
+      const a = element("a", label, "internal");
+      a.href = "#";
+      a.addEventListener("click", (event) => {
+        event.preventDefault();
+        showDetail(id);
+      });
+      return a;
+    }
+    function showDetail(id) {
+      const data = nodes.get(id);
+      if (data === void 0) return;
+      cy.elements().unselect();
+      const node = cy.getElementById(cyIds.get(id));
+      node.select();
+      byId("detail-empty").hidden = true;
+      byId("detail-content").hidden = false;
+      const chip = byId("detail-type");
+      chip.textContent = data.type;
+      chip.style.background = data.color;
+      byId("detail-title").textContent = data.label;
+      byId("detail-id").textContent = id;
+      const place = placeOf(id, data);
+      byId("detail-bundle").textContent = place.bundleTitle;
+      byId("detail-bundle").hidden = place.bundleTitle === "";
+      byId("detail-description").textContent = data.description || "\u2014";
+      const resource = byId("detail-resource");
+      if (data.resource === "") resource.textContent = "\u2014";
+      else if (isHttps(data.resource))
+        resource.replaceChildren(externalLink2(data.resource, data.resource));
+      else resource.textContent = data.resource;
+      const tags = byId("detail-tags");
+      if (data.tags.length === 0) tags.textContent = "\u2014";
+      else tags.replaceChildren(...data.tags.map((tag) => element("span", tag, "tag")));
+      const status = data.status || "stable";
+      const badges = [
+        element("span", status, STATUS_CLASSES.has(status) ? `badge status-${status}` : "badge"),
+        element("span", data.trust_tier.replace(/-/g, " "), `badge trust-${data.trust_tier}`)
+      ];
+      const stale = isStale(data.stale_after, Date.now());
+      node.toggleClass("stale", stale);
+      if (stale) badges.push(element("span", `stale (since ${data.stale_after})`, "badge stale"));
+      else if (data.stale_after !== "") {
+        badges.push(element("span", `stale after ${data.stale_after}`, "badge fresh"));
+      }
+      byId("detail-badges").replaceChildren(...badges);
+      byId("detail-generated").textContent = formatActorEvent(data.generated);
+      byId("detail-verified").textContent = data.verified.length === 0 ? "\u2014" : data.verified.map(formatActorEvent).join("; ");
+      const sources = byId("detail-sources");
+      if (data.sources.length === 0) {
+        sources.textContent = "\u2014";
+      } else {
+        const list = element("ul", "", "sources-list");
+        for (const source of data.sources) {
+          const target = text(source.resource);
+          const label = text(source.title) || target || text(source.id) || "source";
+          const item = document.createElement("li");
+          const path = target.split("#")[0];
+          const concept = path === "" ? null : place.resolve(path, place.dir) ?? place.resolve(path, "");
+          if (concept !== null) item.append(internalLink(concept, label));
+          else if (isHttps(target)) item.append(externalLink2(target, label));
+          else item.textContent = target !== "" && target !== label ? `${label} (${target})` : label;
+          list.append(item);
+        }
+        sources.replaceChildren(list);
+      }
+      byId("detail-body").replaceChildren(
+        renderBody(bodies.get(id) ?? "", {
+          conceptDir: place.dir,
+          resolve: place.resolve,
+          assetBase: place.imageBase
+        })
+      );
+      const citing = backlinks.get(id) ?? [];
+      byId("detail-backlinks").hidden = citing.length === 0;
+      byId("backlinks-list").replaceChildren(
+        ...citing.map((source) => {
+          const item = document.createElement("li");
+          item.append(
+            internalLink(source, nodes.get(source)?.label ?? source),
+            element("span", ` (${source})`, "muted")
+          );
+          return item;
+        })
+      );
+      cy.animate({ center: { eles: node }, zoom: Math.max(cy.zoom(), 1) }, { duration: 200 });
+    }
+    byId("detail-body").addEventListener("click", (event) => {
+      const link = event.target.closest?.("a[data-concept]");
+      if (link === null || link === void 0) return;
+      event.preventDefault();
+      showDetail(link.getAttribute("data-concept"));
+    });
+    window.okfViewer = { cy, showDetail };
+    const initial = graph.nodes.find((n) => n.data.type === "BigQuery Dataset") ?? graph.nodes[0];
+    if (initial !== void 0) showDetail(initial.data.id);
+    else byId("detail-empty").textContent = "This bundle has no concepts.";
+  }
+  main();
+})();
+</script>
+  </body>
+</html>
