@@ -5,17 +5,17 @@ name: Dependabot auto-merge
 # queue, which tests it on top of main and merges it, or drops it if that
 # fails.
 #
-# It needs the secret AUTOMATION_TOKEN, and does nothing without it. GitHub
-# starts no workflow for anything done with a workflow's own token, so a pull
-# request queued with that token would sit in the queue with CI never running
-# on it, holding up everything behind it. See README.md, "Automation token".
-# The secret has to be among the repository's Dependabot secrets: a workflow
-# that Dependabot's pull request starts is given those, and not the Actions
-# secrets.
+# It acts as the repository's automation App, and does nothing if the App
+# isn't set up. GitHub starts no workflow for anything done with a workflow's
+# own token, so a pull request queued with that token would sit in the queue
+# with CI never running on it, holding up everything behind it. See README.md,
+# "Automation App". The App's two secrets have to be among the repository's
+# Dependabot secrets: a workflow that Dependabot's pull request starts is given
+# those, and not the Actions secrets.
 #
-# It is safe on `pull_request`, although it uses a token that can write: a
-# pull request from a fork is given no secrets, and the job runs only for a
-# pull request Dependabot opened in this repository.
+# It is safe on `pull_request`, although it acts with an identity that can
+# write: a pull request from a fork is given no secrets, and the job runs only
+# for a pull request Dependabot opened in this repository.
 
 on: pull_request
 
@@ -29,14 +29,22 @@ jobs:
       github.event.pull_request.user.login == 'dependabot[bot]' &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    env:
+      HAS_APP: ${{ secrets.AUTOMATION_APP_CLIENT_ID != '' }}
     steps:
+      - name: Say that the App isn't set up
+        if: env.HAS_APP != 'true'
+        run: echo "::warning::The automation App's secrets aren't among the Dependabot secrets, so this pull request waits for someone to queue it."
+      - name: Take a token as the automation App
+        id: app
+        if: env.HAS_APP == 'true'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.AUTOMATION_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
       - name: Join the merge queue once the checks pass
-        run: |
-          if [ -z "$GH_TOKEN" ]; then
-            echo "::warning::AUTOMATION_TOKEN isn't among the Dependabot secrets, so this pull request waits for someone to queue it."
-            exit 0
-          fi
-          gh pr merge --auto --rebase "$PR_URL"
+        if: env.HAS_APP == 'true'
+        run: gh pr merge --auto --rebase "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN }}
+          GH_TOKEN: ${{ steps.app.outputs.token }}

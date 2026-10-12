@@ -10,9 +10,9 @@ name: Release
 #
 # GitHub starts no workflow for anything done with a workflow's own token, so
 # CI wouldn't run on a release pull request opened with it, and main accepts
-# nothing CI hasn't passed. With the secret AUTOMATION_TOKEN the pull request
-# is opened by that token's owner and CI runs. Without it, close and reopen
-# the release pull request to start CI. See README.md, "Automation token".
+# nothing CI hasn't passed. So release-please acts as the repository's
+# automation App when that is set up (README.md, "Automation App"), and CI
+# runs. Without it, close and reopen the release pull request to start CI.
 
 on:
   push:
@@ -33,11 +33,20 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+    env:
+      HAS_APP: ${{ secrets.AUTOMATION_APP_CLIENT_ID != '' }}
     steps:
+      - name: Take a token as the automation App
+        id: app
+        if: env.HAS_APP == 'true'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.AUTOMATION_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
       - id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
-          token: ${{ secrets.AUTOMATION_TOKEN || github.token }}
+          token: ${{ steps.app.outputs.token || github.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
