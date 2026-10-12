@@ -1,13 +1,21 @@
 name: Dependabot auto-merge
 
-# Turns on auto-merge for Dependabot's pull requests. Nothing merges here:
-# GitHub merges the pull request once the checks main requires have passed on
-# it, and leaves it open if they don't.
+# Sends Dependabot's pull requests to the merge queue. Nothing merges here:
+# once the checks have passed on the pull request, GitHub puts it in the
+# queue, which tests it on top of main and merges it, or drops it if that
+# fails.
 #
-# It is safe on `pull_request`, although it asks for a token that can write:
-# a pull request from a fork gets a read-only token whatever a workflow asks
-# for, and the job runs only for a pull request Dependabot opened in this
-# repository.
+# It needs the secret AUTOMATION_TOKEN, and does nothing without it. GitHub
+# starts no workflow for anything done with a workflow's own token, so a pull
+# request queued with that token would sit in the queue with CI never running
+# on it, holding up everything behind it. See README.md, "Automation token".
+# The secret has to be among the repository's Dependabot secrets: a workflow
+# that Dependabot's pull request starts is given those, and not the Actions
+# secrets.
+#
+# It is safe on `pull_request`, although it uses a token that can write: a
+# pull request from a fork is given no secrets, and the job runs only for a
+# pull request Dependabot opened in this repository.
 
 on: pull_request
 
@@ -21,12 +29,14 @@ jobs:
       github.event.pull_request.user.login == 'dependabot[bot]' &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
-      - name: Merge by rebase once the checks pass
-        run: gh pr merge --auto --rebase "$PR_URL"
+      - name: Join the merge queue once the checks pass
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::AUTOMATION_TOKEN isn't among the Dependabot secrets, so this pull request waits for someone to queue it."
+            exit 0
+          fi
+          gh pr merge --auto --rebase "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN }}
