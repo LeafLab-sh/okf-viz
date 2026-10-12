@@ -158,13 +158,24 @@ Nobody sets the version or writes the changelog by hand. [release-please](https:
 
 Merging that pull request is the release. The Release workflow then tags the commit, writes the GitHub release, and publishes the package to GitHub Packages.
 
-### Automation token
+### Automation App
 
 GitHub starts no workflow for anything done with a workflow's own token. Two things here are done by workflows and need CI to run on the result: release-please opens the release pull request, and Dependabot's pull requests are sent to the merge queue. With the workflow's own token, CI never runs on either, and `main` accepts nothing CI hasn't passed.
 
-So both workflows use the secret `AUTOMATION_TOKEN` when it is there: a fine-grained personal access token, or a GitHub App's token, for this repository alone, with read and write access to contents and pull requests. It has to be set twice, under *Settings → Secrets and variables*, as an **Actions** secret and as a **Dependabot** secret, since a workflow started by Dependabot's pull request is given only the latter.
+So both workflows act as a GitHub App installed on this repository, when it is set up. Each takes a token from the App that lasts an hour and reaches this repository alone, so no person's token is stored anywhere.
 
-Without it nothing breaks, and two things are done by hand: the release pull request is closed and reopened to start CI on it, and a Dependabot pull request is queued by whoever reads it.
+The App needs these repository permissions and no others, no webhook, and to be installed on this repository only:
+
+| Permission | Access | For |
+|---|---|---|
+| Contents | Read and write | The release branch, tag and GitHub release |
+| Pull requests | Read and write | Opening the release pull request; queueing Dependabot's |
+| Issues | Read and write | The labels release-please puts on its pull request |
+| Merge queues | Read and write | Adding a pull request to the queue |
+
+Two secrets hold what the workflows need: `AUTOMATION_APP_CLIENT_ID`, the App's client ID, and `AUTOMATION_APP_PRIVATE_KEY`, a private key generated for it. Each is set twice, under *Settings → Secrets and variables*, as an **Actions** secret and as a **Dependabot** secret, since a workflow started by Dependabot's pull request is given only the latter.
+
+Without the App nothing breaks, and two things are done by hand: the release pull request is closed and reopened to start CI on it, and a Dependabot pull request is queued by whoever reads it.
 
 ### Notes
 
