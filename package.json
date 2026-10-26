@@ -63,7 +63,7 @@
     "lint-staged": "^17.6.0",
     "marked": "12.0.0",
     "miniflare": "4.20260730.0",
-    "tsup": "^8.5.1",
+    "tsup": "^9.0.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5"
   },
