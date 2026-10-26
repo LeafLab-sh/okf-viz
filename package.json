@@ -58,7 +58,7 @@
     "@types/node": "^26.6.5",
     "cytoscape": "3.28.1",
     "esbuild": "^0.28.2",
-    "happy-dom": "^21.0.3",
+    "happy-dom": "^21.0.4",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "marked": "12.0.0",
