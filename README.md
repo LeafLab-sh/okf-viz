@@ -171,7 +171,6 @@ The App needs these repository permissions and no others, no webhook, and to be 
 | Contents | Read and write | The release branch, tag and GitHub release |
 | Pull requests | Read and write | Opening the release pull request; queueing Dependabot's |
 | Issues | Read and write | The labels release-please puts on its pull request |
-| Merge queues | Read and write | Adding a pull request to the queue |
 
 Two secrets hold what the workflows need: `AUTOMATION_APP_CLIENT_ID`, the App's client ID, and `AUTOMATION_APP_PRIVATE_KEY`, a private key generated for it. Each is set twice, under *Settings → Secrets and variables*, as an **Actions** secret and as a **Dependabot** secret, since a workflow started by Dependabot's pull request is given only the latter.
 

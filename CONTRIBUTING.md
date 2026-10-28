@@ -2,7 +2,7 @@
 
 Changes come in as pull requests against `main`, from a branch or from a fork. `main` is protected: nothing is pushed to it directly, and a pull request merges only when CI passes.
 
-A pull request that is ready joins a merge queue. The queue puts it on top of the current `main`, runs CI on that, and merges it by rebase if CI passes, so what lands has been tested as it lands and nobody has to keep a branch up to date by hand.
+A pull request merges by rebase once CI passes on it. It doesn't have to be up to date with `main` first, and `main` keeps a linear history.
 
 ## Setting up
 
