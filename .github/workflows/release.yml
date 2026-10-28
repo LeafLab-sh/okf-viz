@@ -8,11 +8,10 @@ name: Release
 # Merging that pull request is the release: this workflow then tags it, writes
 # the GitHub release, and publishes the package to GitHub Packages.
 #
-# GitHub starts no workflow for anything done with a workflow's own token, so
-# CI wouldn't run on a release pull request opened with it, and main accepts
-# nothing CI hasn't passed. So release-please acts as the repository's
-# automation App when that is set up (README.md, "Automation App"), and CI
-# runs. Without it, close and reopen the release pull request to start CI.
+# release-please acts as the org's automation App (README.md, "Automation
+# App"). Only the App may create v* tags (org ruleset), and CI runs on a pull
+# request the App opens, which it wouldn't on one opened with the workflow's
+# own token. There is no fallback: without the App's key, the run fails.
 
 on:
   push:
@@ -33,12 +32,9 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
-    env:
-      HAS_APP: ${{ vars.LEAFLAB_AUTOMATION_CLIENT_ID != '' && secrets.LEAFLAB_AUTOMATION_PRIVATE_KEY != '' }}
     steps:
       - name: Take a token as the automation App
         id: app
-        if: env.HAS_APP == 'true'
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           client-id: ${{ vars.LEAFLAB_AUTOMATION_CLIENT_ID }}
@@ -46,7 +42,7 @@ jobs:
       - id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
-          token: ${{ steps.app.outputs.token || github.token }}
+          token: ${{ steps.app.outputs.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 

@@ -174,7 +174,7 @@ The App needs at least these repository permissions:
 
 What the workflows need is set once for the org, under the org's *Settings → Secrets and variables*: the variable `LEAFLAB_AUTOMATION_CLIENT_ID`, the App's client ID, and the secret `LEAFLAB_AUTOMATION_PRIVATE_KEY`, a private key generated for it. The secret is set twice, as an **Actions** secret and as a **Dependabot** secret, since a workflow started by Dependabot's pull request is given only the latter.
 
-Without the App nothing breaks, and two things are done by hand: the release pull request is closed and reopened to start CI on it, and the release pull request picks up a Dependabot update only at the next push to `main` that isn't Dependabot's.
+Releases need the App. The org lets only `leaflab-automation` create `v*` tags, so the Release workflow has no fallback to the workflow's own token and fails without the App's key. Dependabot's auto-merge still works without it, but the release pull request then picks up a Dependabot update only at the next push to `main` that isn't Dependabot's.
 
 ### Notes
 
