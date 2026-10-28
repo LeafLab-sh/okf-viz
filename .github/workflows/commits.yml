@@ -5,11 +5,10 @@ name: Commits
 
 on:
   pull_request:
-  merge_group:
 
 permissions:
   contents: read
 
 jobs:
   commits:
-    uses: LeafLab-sh/shared-workflows/.github/workflows/commits.yml@7a836e80b9ba87d05a47142fc52c73c24bc76c2b # v1.0.0
+    uses: LeafLab-sh/shared-workflows/.github/workflows/commits.yml@29c3f0246fbb68e1abb1bbbf35d06c84f5c4df54 # v1.1.0
