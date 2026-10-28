@@ -160,21 +160,21 @@ Merging that pull request is the release. The Release workflow then tags the com
 
 ### Automation App
 
-GitHub starts no workflow for anything done with a workflow's own token. Two things here are done by workflows and need CI to run on the result: release-please opens the release pull request, and Dependabot's pull requests are sent to the merge queue. With the workflow's own token, CI never runs on either, and `main` accepts nothing CI hasn't passed.
+GitHub starts no workflow for anything done with a workflow's own token. Two things here are done by workflows and need other workflows to run on the result: release-please opens the release pull request, which needs CI, and Dependabot's pull requests are merged by auto-merge, which has to start the release workflow. With the workflow's own token, neither happens.
 
-So both workflows act as a GitHub App installed on this repository, when it is set up. Each takes a token from the App that lasts an hour and reaches this repository alone, so no person's token is stored anywhere.
+So both workflows act as the org's GitHub App, `leaflab-automation`. Each takes a token from the App that lasts an hour and reaches this repository alone, so no person's token is stored anywhere. Dependabot's pull requests go through the org's [shared workflow](https://github.com/LeafLab-sh/shared-workflows), which approves them and turns on auto-merge.
 
-The App needs these repository permissions and no others, no webhook, and to be installed on this repository only:
+The App needs at least these repository permissions:
 
 | Permission | Access | For |
 |---|---|---|
 | Contents | Read and write | The release branch, tag and GitHub release |
-| Pull requests | Read and write | Opening the release pull request; queueing Dependabot's |
+| Pull requests | Read and write | Opening the release pull request; approving Dependabot's and turning on their auto-merge |
 | Issues | Read and write | The labels release-please puts on its pull request |
 
-Two secrets hold what the workflows need: `AUTOMATION_APP_CLIENT_ID`, the App's client ID, and `AUTOMATION_APP_PRIVATE_KEY`, a private key generated for it. Each is set twice, under *Settings → Secrets and variables*, as an **Actions** secret and as a **Dependabot** secret, since a workflow started by Dependabot's pull request is given only the latter.
+What the workflows need is set once for the org, under the org's *Settings → Secrets and variables*: the variable `LEAFLAB_AUTOMATION_CLIENT_ID`, the App's client ID, and the secret `LEAFLAB_AUTOMATION_PRIVATE_KEY`, a private key generated for it. The secret is set twice, as an **Actions** secret and as a **Dependabot** secret, since a workflow started by Dependabot's pull request is given only the latter.
 
-Without the App nothing breaks, and two things are done by hand: the release pull request is closed and reopened to start CI on it, and a Dependabot pull request is queued by whoever reads it.
+Without the App nothing breaks, and two things are done by hand: the release pull request is closed and reopened to start CI on it, and the release pull request picks up a Dependabot update only at the next push to `main` that isn't Dependabot's.
 
 ### Notes
 

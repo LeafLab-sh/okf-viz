@@ -1,50 +1,29 @@
 name: Dependabot auto-merge
 
-# Sends Dependabot's pull requests to the merge queue. Nothing merges here:
-# once the checks have passed on the pull request, GitHub puts it in the
-# queue, which tests it on top of main and merges it, or drops it if that
-# fails.
+# Approves Dependabot's pull requests and turns on their auto-merge, so each
+# merges by rebase once CI passes on it. One that fails stays open for
+# someone to look at. Major updates are included: CI is what decides.
 #
-# It acts as the repository's automation App, and does nothing if the App
-# isn't set up. GitHub starts no workflow for anything done with a workflow's
-# own token, so a pull request queued with that token would sit in the queue
-# with CI never running on it, holding up everything behind it. See README.md,
-# "Automation App". The App's two secrets have to be among the repository's
-# Dependabot secrets: a workflow that Dependabot's pull request starts is given
-# those, and not the Actions secrets.
-#
-# It is safe on `pull_request`, although it acts with an identity that can
-# write: a pull request from a fork is given no secrets, and the job runs only
-# for a pull request Dependabot opened in this repository.
+# The work is done by the shared workflow, acting as the org's automation
+# App (README.md, "Automation App"). GitHub starts no workflow for anything
+# done with a workflow's own token, so a merge made with that token would
+# never start the release workflow. Without the App's private key among the
+# Dependabot secrets, the shared workflow falls back to that token and warns.
 
-on: pull_request
+on:
+  pull_request:
+    types: [opened, reopened]
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
-  enable:
-    if: >-
-      github.repository == 'LeafLab-sh/okf-viz' &&
-      github.event.pull_request.user.login == 'dependabot[bot]' &&
-      github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    env:
-      HAS_APP: ${{ secrets.AUTOMATION_APP_CLIENT_ID != '' }}
-    steps:
-      - name: Say that the App isn't set up
-        if: env.HAS_APP != 'true'
-        run: echo "::warning::The automation App's secrets aren't among the Dependabot secrets, so this pull request waits for someone to queue it."
-      - name: Take a token as the automation App
-        id: app
-        if: env.HAS_APP == 'true'
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
-        with:
-          client-id: ${{ secrets.AUTOMATION_APP_CLIENT_ID }}
-          private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
-      - name: Join the merge queue once the checks pass
-        if: env.HAS_APP == 'true'
-        run: gh pr merge --auto --rebase "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ steps.app.outputs.token }}
+  dependabot:
+    uses: LeafLab-sh/shared-workflows/.github/workflows/dependabot-auto-merge.yml@29c3f0246fbb68e1abb1bbbf35d06c84f5c4df54 # v1.1.0
+    with:
+      update-types: version-update:semver-patch,version-update:semver-minor,version-update:semver-major
+      approve: true
+      app-client-id: ${{ vars.LEAFLAB_AUTOMATION_CLIENT_ID }}
+    secrets:
+      app-private-key: ${{ secrets.LEAFLAB_AUTOMATION_PRIVATE_KEY }}

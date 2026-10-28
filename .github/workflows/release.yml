@@ -34,15 +34,15 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     env:
-      HAS_APP: ${{ secrets.AUTOMATION_APP_CLIENT_ID != '' }}
+      HAS_APP: ${{ vars.LEAFLAB_AUTOMATION_CLIENT_ID != '' && secrets.LEAFLAB_AUTOMATION_PRIVATE_KEY != '' }}
     steps:
       - name: Take a token as the automation App
         id: app
         if: env.HAS_APP == 'true'
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
-          client-id: ${{ secrets.AUTOMATION_APP_CLIENT_ID }}
-          private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
+          client-id: ${{ vars.LEAFLAB_AUTOMATION_CLIENT_ID }}
+          private-key: ${{ secrets.LEAFLAB_AUTOMATION_PRIVATE_KEY }}
       - id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
