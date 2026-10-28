@@ -1,1 +1,6 @@
-store: leaflab
+schema: spec-driven
+
+# This repository's own specs live in openspec/specs and openspec/changes.
+# Org standards and integrations are read from the leaflab store.
+references:
+  - { id: leaflab, remote: "git@github.com:LeafLab-sh/openspec.git" }
