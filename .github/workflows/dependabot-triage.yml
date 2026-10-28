@@ -1,0 +1,23 @@
+name: Dependabot triage
+
+# A Linear issue, in LEA's Triage, when CI or the commit checks fail on a
+# Dependabot pull request. See https://github.com/LeafLab-sh/shared-workflows.
+
+on:
+  workflow_run:
+    workflows: [CI, Commits]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+
+jobs:
+  triage:
+    uses: LeafLab-sh/shared-workflows/.github/workflows/dependabot-triage.yml@60810f48196fe31bfe783d62425801fd16cf6ed4 # v1.2.0
+    with:
+      linear-team: LEA
+      linear-client-id: ${{ vars.LINEAR_CLIENT_ID }}
+    secrets:
+      linear-client-secret: ${{ secrets.LINEAR_CLIENT_SECRET }}
