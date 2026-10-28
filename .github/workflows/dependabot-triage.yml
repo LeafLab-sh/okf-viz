@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   triage:
-    uses: LeafLab-sh/shared-workflows/.github/workflows/dependabot-triage.yml@60810f48196fe31bfe783d62425801fd16cf6ed4 # v1.2.0
+    uses: LeafLab-sh/shared-workflows/.github/workflows/dependabot-triage.yml@1cb552976ad41aab5bc5567009cdb30630bf5553 # v1.2.1
     with:
       linear-team: LEA
       linear-client-id: ${{ vars.LINEAR_CLIENT_ID }}
