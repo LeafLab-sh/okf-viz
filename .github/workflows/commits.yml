@@ -1,0 +1,15 @@
+name: Commits
+
+# Conventional Commits, and no fixup! commits left, on every pull request.
+# See https://github.com/LeafLab-sh/shared-workflows.
+
+on:
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  commits:
+    uses: LeafLab-sh/shared-workflows/.github/workflows/commits.yml@7a836e80b9ba87d05a47142fc52c73c24bc76c2b # v1.0.0
