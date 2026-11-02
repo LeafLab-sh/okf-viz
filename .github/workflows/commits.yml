@@ -11,4 +11,4 @@ permissions:
 
 jobs:
   commits:
-    uses: LeafLab-sh/shared-workflows/.github/workflows/commits.yml@29c3f0246fbb68e1abb1bbbf35d06c84f5c4df54 # v1.1.0
+    uses: LeafLab-sh/shared-workflows/.github/workflows/commits.yml@1cb552976ad41aab5bc5567009cdb30630bf5553 # v1.2.1
